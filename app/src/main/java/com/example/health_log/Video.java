@@ -1,6 +1,26 @@
 package com.example.health_log;
 
 import java.util.List;
+
+public class Video {
+    private String title;
+    private String uploader;
+    private int likes;
+    private int comments;
+    private String uploadDate;
+    private List<String> tags;
+    private String thumbnailUrl;
+
+    public Video(String title, String uploader, int likes, int comments, String uploadDate, List<String> tags, String thumbnailUrl) {
+        this.title = title;
+        this.uploader = uploader;
+        this.likes = likes;
+        this.comments = comments;
+        this.uploadDate = uploadDate;
+        this.tags = tags;
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
 import java.util.Date;
 
 public class Video {
@@ -57,6 +77,18 @@ public class Video {
         return comments;
     }
 
+    public String getUploadDate() {
+        return uploadDate;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+}
     // Setters (시스템 자동 생성 정보는 내부적으로 설정되므로, 필요한 경우에만 setter 제공)
     public void setTitle(String title) {
         this.title = title;
