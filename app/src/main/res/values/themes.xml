@@ -1,9 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Health_log" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <!--
+        라이트 모드(Day Mode)용 기본 애플리케이션 테마입니다.
+        이름을 "Theme.Health_Log"로 통일하여 사용합니다.
+        Theme.Material3.DayNight.NoActionBar를 부모로 사용하면
+        시스템 설정에 따라 라이트/다크 모드가 자동으로 전환됩니다.
+     -->
+    <style name="Theme.Health_Log" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- 이곳에서 라이트 모드에 사용할 주요 색상 등을 커스터마이징할 수 있습니다. -->
+        <!-- 예시:
+        <item name="colorPrimary">@color/purple_500</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        -->
     </style>
 
-    <style name="Theme.Health_log" parent="Base.Theme.Health_log" />
 </resources>
