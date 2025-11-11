@@ -14,12 +14,20 @@ import com.google.android.material.chip.ChipGroup;
 
 import java.util.List;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.VideoCardViewHolder> {
 
     private List<Video> videoList;
+    private List<Video> videoListFull; // 원본 데이터 전체를 보관할 리스트
 
     public VideoCardAdapter(List<Video> videoList) {
         this.videoList = videoList;
+        // 필터링을 위해 원본 리스트의 복사본을 만들어 둡니다.
+        this.videoListFull = new ArrayList<>(videoList);
     }
 
     @NonNull
@@ -35,7 +43,11 @@ public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.Vide
         holder.title.setText(video.getTitle());
         holder.uploader.setText(video.getUploader());
         holder.likesComments.setText(video.getLikes() + " likes  " + video.getComments() + " comments");
-        holder.uploadDate.setText(video.getUploadDate());
+
+        // 날짜 형식을 "yyyy-MM-dd"로 지정하여 변환합니다.
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        holder.uploadDate.setText(sdf.format(video.getUploadDate()));
+
 
         holder.tags.removeAllViews();
         for (String tag : video.getTags()) {
@@ -50,6 +62,22 @@ public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.Vide
     @Override
     public int getItemCount() {
         return videoList.size();
+    }
+
+    public void filter(String text) {
+        videoList.clear(); // 현재 리스트를 비웁니다.
+        if (text.isEmpty()) {
+            videoList.addAll(videoListFull); // 검색어가 없으면 전체 리스트를 보여줍니다.
+        } else {
+            text = text.toLowerCase();
+            for (Video item : videoListFull) {
+                // 비디오 제목에 검색어가 포함되어 있는지 확인 (원하는 조건으로 변경 가능)
+                if (item.getTitle().toLowerCase().contains(text)) {
+                    videoList.add(item);
+                }
+            }
+        }
+        notifyDataSetChanged(); // 어댑터에 데이터가 변경되었음을 알립니다.
     }
 
     public static class VideoCardViewHolder extends RecyclerView.ViewHolder {
