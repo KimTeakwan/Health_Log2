@@ -57,12 +57,17 @@ class VideoUploadActivity : AppCompatActivity() {
 
         // 업로드 버튼
         binding.uploadButton.setOnClickListener {
-            // TODO: 실제 업로드 로직 구현
             val title = binding.titleEditText.text.toString()
             if (title.isEmpty()) {
                 Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this, "'$title' 영상을 업로드합니다.", Toast.LENGTH_SHORT).show()
+                // 1. "업로드 중" 토스트 메시지 표시
+                Toast.makeText(this, "영상을 업로드합니다...", Toast.LENGTH_SHORT).show()
+
+                // 2. MainActivity로 이동하고 현재 액티비티 스택을 정리
+                val intent = Intent(this, MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
             }
         }
 

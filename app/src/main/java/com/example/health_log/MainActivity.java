@@ -1,5 +1,6 @@
 package com.example.health_log;
 
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
@@ -37,6 +38,12 @@ public class MainActivity extends AppCompatActivity {
 
         // 5. SearchView 설정
         setupSearchView();
+
+        // 6. FloatingActionButton 클릭 리스너 설정
+        binding.fab.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, VideoUploadActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void setupRecyclerView() {
