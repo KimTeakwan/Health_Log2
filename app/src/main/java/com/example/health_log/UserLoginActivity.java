@@ -41,5 +41,13 @@ public class UserLoginActivity extends AppCompatActivity {
                 }
             }
         });
+
+        findViewById(R.id.txtFind).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(UserLoginActivity.this, FindIdPasswordActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

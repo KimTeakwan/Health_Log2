@@ -38,6 +38,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".FindIdPasswordActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ProfileActivity"
             android:label="Profile Screen"
             android:theme="@style/Theme.Health_Log"
