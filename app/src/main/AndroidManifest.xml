@@ -30,12 +30,11 @@
         <activity
             android:name=".SignUpActivity"
             android:exported="false" />
+
         <activity
-            android:name=".UserLoginActivity"
+            android:name=".FindIdPasswordActivity"
             android:exported="false" />
-        <activity
-            android:name=".TrainerLoginActivity"
-            android:exported="false" />
+
 
         <activity
             android:name=".ProfileActivity"

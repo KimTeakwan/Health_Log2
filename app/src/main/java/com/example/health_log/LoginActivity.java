@@ -11,8 +11,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity {
-    private Button btnUserLogin;
-    private Button btnTrainerLogin;
+    private EditText editTextId;
+    private EditText editTextPassword;
+    private RadioGroup radioGroupUserType;
+    private Button buttonLogin;
     private Button buttonSignUp;
     private TextView textViewFindCredentials;
 
@@ -21,24 +23,38 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        btnUserLogin = findViewById(R.id.btnUserLogin);
-        btnTrainerLogin = findViewById(R.id.btnTrainerLogin);
+        editTextId = findViewById(R.id.editTextId);
+        editTextPassword = findViewById(R.id.editTextPassword);
+        radioGroupUserType = findViewById(R.id.radioGroupUserType);
+        buttonLogin = findViewById(R.id.buttonLogin);
         buttonSignUp = findViewById(R.id.btnSignup);
         textViewFindCredentials = findViewById(R.id.txtFind);
 
-        btnUserLogin.setOnClickListener(new View.OnClickListener() {
+        buttonLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, UserLoginActivity.class);
-                startActivity(intent);
-            }
-        });
+                String id = editTextId.getText().toString().trim();
+                String password = editTextPassword.getText().toString().trim();
 
-        btnTrainerLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, TrainerLoginActivity.class);
-                startActivity(intent);
+                if (id.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(LoginActivity.this, "아이디와 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                int selectedId = radioGroupUserType.getCheckedRadioButtonId();
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+
+                if (selectedId == R.id.radioUser) {
+                    Toast.makeText(LoginActivity.this, "유저 로그인 성공!", Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                    finish();
+                } else if (selectedId == R.id.radioTrainer) {
+                    Toast.makeText(LoginActivity.this, "트레이너 로그인 성공!", Toast.LENGTH_SHORT).show();
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(LoginActivity.this, "사용자 유형을 선택해주세요.", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -53,8 +69,8 @@ public class LoginActivity extends AppCompatActivity {
         textViewFindCredentials.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(LoginActivity.this, "아이디/비밀번호 찾기 화면으로 이동", Toast.LENGTH_SHORT).show();
-                // In a real app, you would start a FindCredentialsActivity here
+                Intent intent = new Intent(LoginActivity.this, FindIdPasswordActivity.class);
+                startActivity(intent);
             }
         });
     }
