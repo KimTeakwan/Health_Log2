@@ -12,7 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
+import java.text.SimpleDateFormat; // ✅ 추가됨: 날짜 포맷 변경 도구
 import java.util.List;
+import java.util.Locale;        // ✅ 추가됨: 지역 설정 도구
 
 public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.VideoCardViewHolder> {
 
@@ -35,13 +37,22 @@ public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.Vide
         holder.title.setText(video.getTitle());
         holder.uploader.setText(video.getUploader());
         holder.likesComments.setText(video.getLikes() + " likes  " + video.getComments() + " comments");
-        holder.uploadDate.setText(video.getUploadDate());
+
+        // ✅ 수정된 부분: Date 객체를 String으로 변환
+        if (video.getUploadDate() != null) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+            holder.uploadDate.setText(sdf.format(video.getUploadDate()));
+        } else {
+            holder.uploadDate.setText("");
+        }
 
         holder.tags.removeAllViews();
-        for (String tag : video.getTags()) {
-            Chip chip = new Chip(holder.itemView.getContext());
-            chip.setText(tag);
-            holder.tags.addView(chip);
+        if (video.getTags() != null) {
+            for (String tag : video.getTags()) {
+                Chip chip = new Chip(holder.itemView.getContext());
+                chip.setText(tag);
+                holder.tags.addView(chip);
+            }
         }
         // In a real app, you would use a library like Glide or Picasso to load the image
         // holder.thumbnail.setImageResource(R.drawable.placeholder);

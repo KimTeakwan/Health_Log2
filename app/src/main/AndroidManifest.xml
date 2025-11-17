@@ -41,6 +41,11 @@
             android:label="Profile Screen"
             android:theme="@style/Theme.Health_Log"
             android:exported="false" />
+        <activity
+            android:name=".UserProfileActivity"
+            android:label="User Profile"
+            android:theme="@style/Theme.Health_Log"
+            android:exported="false" />
             
     </application>
 
