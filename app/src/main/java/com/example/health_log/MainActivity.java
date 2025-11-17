@@ -27,23 +27,16 @@ public class MainActivity extends AppCompatActivity {
         java.util.List<String> tags = new java.util.ArrayList<>();
         tags.add("Chest");
         tags.add("Push");
-
-
         for (int i = 0; i < 20; i++) {
-            // Video(String, List<String>, String, String) 생성자에 맞게 수정
-            // 순서: (제목, 태그, 업로더, 설명)으로 가정
-            Video video = new Video(
-                    "Video Title " + (i + 1),      // 1. String (제목)
-                    tags,                          // 2. List<String> (태그)
-                    "Uploader " + (i + 1),         // 3. String (업로더)
-                    "이것은 동영상 설명입니다. " + (i + 1) // 4. String (설명)
-            );
-
-            // 좋아요나 댓글 수 등은 setter를 사용해 별도로 값을 넣어줄 수 있습니다.
-            // video.setLikes(1200 + i);
-            // video.setComments(345 + i);
-
-            videoList.add(video);
+            videoList.add(new Video(
+                "Video Title " + (i + 1),
+                "Uploader " + (i + 1),
+                1200 + i,
+                345 + i,
+                (i + 1) + " days ago",
+                tags,
+                ""
+            ));
         }
 
         VideoCardAdapter adapter = new VideoCardAdapter(videoList);
