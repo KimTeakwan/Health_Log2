@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "128092887922",
+    "project_id": "healthlog-b0e02",
+    "storage_bucket": "healthlog-b0e02.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:128092887922:android:21ff407ace771ce4e65beb",
+        "android_client_info": {
+          "package_name": "com.example.health_log"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaRQ_gGbxJv-YpaarDy-9tvN2LK2fSleI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
