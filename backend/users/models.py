@@ -41,10 +41,3 @@ def create_user_profile(sender, instance, created, **kwargs):
             UserProfile.objects.create(user=instance)
         elif instance.role == 'trainer':
             TrainerProfile.objects.create(user=instance)
-
-@receiver(post_save, sender=CustomUser)
-def save_user_profile(sender, instance, **kwargs):
-    if instance.role == 'user':
-        instance.userprofile.save()
-    elif instance.role == 'trainer':
-        instance.trainerprofile.save()
