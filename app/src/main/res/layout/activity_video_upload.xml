@@ -93,6 +93,23 @@
             android:minLines="3"/>
     </com.google.android.material.textfield.TextInputLayout>
 
+    <!-- Tags -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tagsInputLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/descriptionInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/tagsEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tags (comma-separated)" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- 운동 종류 -->
     <Spinner
         android:id="@+id/exerciseTypeSpinner"
@@ -100,7 +117,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:prompt="@string/app_name"
-        app:layout_constraintTop_toBottomOf="@id/descriptionInputLayout"
+        app:layout_constraintTop_toBottomOf="@id/tagsInputLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -120,23 +137,6 @@
         <RadioButton android:id="@+id/followersOnlyRadioButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="팔로우만" android:layout_marginStart="16dp"/>
     </RadioGroup>
 
-    <!-- 태그 -->
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/tagsInputLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/visibilityRadioGroup"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/tagsEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="태그 (쉼표로 구분)" />
-    </com.google.android.material.textfield.TextInputLayout>
-
     <!-- 피드백 작성 -->
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/feedbackSwitch"
@@ -144,7 +144,7 @@
         android:layout_height="wrap_content"
         android:text="피드백 요청"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tagsInputLayout"
+        app:layout_constraintTop_toBottomOf="@id/visibilityRadioGroup"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 

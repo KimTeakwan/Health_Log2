@@ -5,15 +5,21 @@ from .models import UserProfile, TrainerProfile
 # Get the CustomUser model
 User = get_user_model()
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'role')
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ('height', 'weight', 'goal')
 
 class TrainerProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = TrainerProfile
-        fields = ('specialty', 'certification')
+        fields = ('user', 'specialty', 'certification', 'adopted_comment_count')
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """

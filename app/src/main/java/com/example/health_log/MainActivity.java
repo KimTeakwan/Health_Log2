@@ -1,11 +1,13 @@
 package com.example.health_log;
 
 import android.content.Intent;
-import android.content.SharedPreferences; // ✅ 이 줄이 추가되었습니다.
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -14,12 +16,26 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.health_log.network.ApiService;
+import com.example.health_log.network.RetrofitClient;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
+
+    private RecyclerView recyclerView;
+    private VideoCardAdapter adapter;
+    private List<Video> videoList = new ArrayList<>();
+    private ApiService apiService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,34 +45,35 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        RecyclerView recyclerView = findViewById(R.id.recycler_view);
+        recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        List<Video> videoList = new ArrayList<>();
-        List<String> tags = new ArrayList<>();
-        tags.add("Chest");
-        tags.add("Push");
-
-        // ✅ Video 객체 생성 로직
-        for (int i = 0; i < 20; i++) {
-            // 1. 필수 정보(제목, 태그, 설명)로 객체 생성
-            Video video = new Video(
-                    "Video Title " + (i + 1), // title
-                    tags,                     // tags
-                    "This is a description."  // description
-            );
-
-            // 2. 나머지 정보는 setter를 이용해 설정
-            video.setUploader("Uploader " + (i + 1));
-            video.setLikes(1200 + i);
-            video.setComments(345 + i);
-            video.setThumbnailUrl("");
-
-            videoList.add(video);
-        }
-
-        VideoCardAdapter adapter = new VideoCardAdapter(videoList);
+        adapter = new VideoCardAdapter(this, videoList);
         recyclerView.setAdapter(adapter);
+
+        apiService = RetrofitClient.getApiService();
+        getVideos(null); // Load all videos initially
+
+        TabLayout tabLayout = findViewById(R.id.tabs);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                String selectedTag = tab.getText().toString();
+                if ("Home".equalsIgnoreCase(selectedTag)) {
+                    getVideos(null);
+                } else {
+                    getVideos(selectedTag);
+                }
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
 
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -81,6 +98,28 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void getVideos(String tag) {
+        apiService.getVideos(tag).enqueue(new Callback<List<Video>>() {
+            @Override
+            public void onResponse(Call<List<Video>> call, Response<List<Video>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    videoList.clear();
+                    videoList.addAll(response.body());
+                    adapter.notifyDataSetChanged();
+                } else {
+                    Toast.makeText(MainActivity.this, "Failed to load videos", Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Failed to load videos: " + response.code());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<Video>> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "An error occurred", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "An error occurred", t);
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -91,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_profile) {
-            // ✅ SharedPreferences 사용 시 import가 필요했음
             SharedPreferences sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE);
             String userType = sharedPreferences.getString("user_type", "user"); // Default to "user"
 

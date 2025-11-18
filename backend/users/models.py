@@ -28,6 +28,7 @@ class TrainerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trainerprofile')
     specialty = models.CharField(max_length=100, blank=True)
     certification = models.TextField(max_length=500, blank=True)
+    adopted_comment_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username
