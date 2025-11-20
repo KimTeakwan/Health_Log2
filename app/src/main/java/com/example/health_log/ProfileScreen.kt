@@ -36,7 +36,7 @@ import retrofit2.Callback
 import retrofit2.Response
 
 @Composable
-fun ProfileScreen(isTrainer: Boolean) {
+fun ProfileScreen(isTrainer: Boolean, onLogoutClicked: () -> Unit) {
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE) }
     // RetrofitClient는 remember로 감싸지 않아도 되지만, 재생성을 막기 위해 remember 사용 가능
@@ -123,6 +123,15 @@ fun ProfileScreen(isTrainer: Boolean) {
 
             Spacer(modifier = Modifier.height(24.dp))
             HistorySection()
+
+            Spacer(modifier = Modifier.weight(1f)) // Pushes the button to the bottom
+
+            Button(
+                onClick = onLogoutClicked,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("로그아웃")
+            }
         }
 
         // 우측 상단 편집 버튼
@@ -261,7 +270,7 @@ fun ProfileEditButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
 @Composable
 fun ProfileScreenTrainerPreview() {
     MaterialTheme {
-        ProfileScreen(isTrainer = true)
+        ProfileScreen(isTrainer = true, onLogoutClicked = {})
     }
 }
 
@@ -269,6 +278,6 @@ fun ProfileScreenTrainerPreview() {
 @Composable
 fun ProfileScreenUserPreview() {
     MaterialTheme {
-        ProfileScreen(isTrainer = false)
+        ProfileScreen(isTrainer = false, onLogoutClicked = {})
     }
 }
