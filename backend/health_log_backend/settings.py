@@ -132,3 +132,17 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# Firebase Admin SDK setup
+import firebase_admin
+from firebase_admin import credentials
+import os
+
+cred = credentials.Certificate(os.path.join(BASE_DIR, 'firebase-service-account.json'))
+firebase_admin.initialize_app(cred)
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'users.authentication.FirebaseAuthentication',
+    ],
+}

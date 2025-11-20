@@ -117,14 +117,17 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/radioGroupUserType" />
 
-        <EditText
-            android:id="@+id/editTextDob"
+        <TextView
+            android:id="@+id/textViewDob"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="생년월일 (YYYY-MM-DD)"
-            android:inputType="date"
-            android:minHeight="48dp"
+            android:hint="생년월일"
+            android:padding="12dp"
+            android:textSize="18sp"
+            android:background="@android:drawable/edit_text"
+            android:drawableEnd="@android:drawable/ic_menu_my_calendar"
+            android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/buttonAttachFile" />
@@ -134,12 +137,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="핸드폰 번호"
+            android:hint="핸드폰"
             android:inputType="phone"
-            android:minHeight="48dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editTextDob" />
+            app:layout_constraintTop_toBottomOf="@+id/textViewDob" />
 
         <Button
             android:id="@+id/buttonSubmitSignUp"

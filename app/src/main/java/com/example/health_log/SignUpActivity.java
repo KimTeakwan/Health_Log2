@@ -1,5 +1,6 @@
 package com.example.health_log;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -7,20 +8,28 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.health_log.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import java.util.Calendar;
+
 public class SignUpActivity extends AppCompatActivity {
 
-    private EditText editTextName, editTextSignUpId, editTextSignUpEmail, editTextSignUpPassword, editTextConfirmPassword, editTextDob, editTextPhone;
+    private EditText editTextName, editTextSignUpId, editTextSignUpEmail, editTextSignUpPassword, editTextConfirmPassword, editTextPhone;
+    private TextView textViewDob;
     private RadioGroup radioGroupUserType;
     private Button buttonAttachFile;
     private Button buttonSubmitSignUp;
     private Uri fileUri;
+    private FirebaseAuth mAuth;
+    private String selectedDob;
 
     private static final int FILE_PICKER_REQUEST_CODE = 123;
 
@@ -29,6 +38,8 @@ public class SignUpActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
 
+        mAuth = FirebaseAuth.getInstance();
+
         editTextName = findViewById(R.id.editTextName);
         editTextSignUpId = findViewById(R.id.editTextSignUpId);
         editTextSignUpEmail = findViewById(R.id.editTextSignUpEmail);
@@ -36,9 +47,16 @@ public class SignUpActivity extends AppCompatActivity {
         editTextConfirmPassword = findViewById(R.id.editTextConfirmPassword);
         radioGroupUserType = findViewById(R.id.radioGroupUserType);
         buttonAttachFile = findViewById(R.id.buttonAttachFile);
-        editTextDob = findViewById(R.id.editTextDob);
+        textViewDob = findViewById(R.id.textViewDob);
         editTextPhone = findViewById(R.id.editTextPhone);
         buttonSubmitSignUp = findViewById(R.id.buttonSubmitSignUp);
+
+        textViewDob.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog();
+            }
+        });
 
         radioGroupUserType.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -66,6 +84,21 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
+    private void showDatePickerDialog() {
+        final Calendar c = Calendar.getInstance();
+        int year = c.get(Calendar.YEAR);
+        int month = c.get(Calendar.MONTH);
+        int day = c.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, year1, monthOfYear, dayOfMonth) -> {
+                    selectedDob = year1 + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
+                    textViewDob.setText(selectedDob);
+                }, year, month, day);
+        datePickerDialog.show();
+    }
+
+
     private void openFilePicker() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -82,22 +115,12 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void registerUser() {
-        String name = editTextName.getText().toString().trim();
-        String signUpId = editTextSignUpId.getText().toString().trim();
         String email = editTextSignUpEmail.getText().toString().trim();
         String password = editTextSignUpPassword.getText().toString().trim();
         String confirmPassword = editTextConfirmPassword.getText().toString().trim();
-        String dob = editTextDob.getText().toString().trim();
-        String phone = editTextPhone.getText().toString().trim();
 
-        int selectedUserTypeId = radioGroupUserType.getCheckedRadioButtonId();
-        RadioButton selectedRadioButton = findViewById(selectedUserTypeId);
-        String userType = selectedRadioButton.getText().toString();
-
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(signUpId) || TextUtils.isEmpty(email) ||
-                TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword) ||
-                TextUtils.isEmpty(dob) || TextUtils.isEmpty(phone)) {
-            Toast.makeText(this, "모든 필드를 입력해주세요.", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || TextUtils.isEmpty(confirmPassword)) {
+            Toast.makeText(this, "이메일과 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -106,25 +129,26 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
-        if (selectedUserTypeId == R.id.radioButtonTrainer && fileUri == null) {
-            Toast.makeText(this, "트레이너는 자격증 파일을 첨부해야 합니다.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // In a real app, you would register the user here with all the details
-        String summary = "회원가입 성공!\n" +
-                "이름: " + name + "\n" +
-                "아이디: " + signUpId + "\n" +
-                "이메일: " + email + "\n" +
-                "회원 유형: " + userType + "\n" +
-                "생년월일: " + dob + "\n" +
-                "핸드폰: " + phone;
-
-        if (fileUri != null) {
-            summary += "\n첨부파일: " + fileUri.getPath();
-        }
-
-        Toast.makeText(this, summary, Toast.LENGTH_LONG).show();
-        finish(); // Go back to LoginActivity
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null) {
+                            user.sendEmailVerification()
+                                    .addOnCompleteListener(task2 -> {
+                                        if (task2.isSuccessful()) {
+                                            Toast.makeText(SignUpActivity.this, "회원가입 성공! 이메일을 확인하여 계정을 활성화해주세요.", Toast.LENGTH_LONG).show();
+                                        } else {
+                                            Toast.makeText(SignUpActivity.this, "인증 이메일 발송에 실패했습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        finish(); // Go back to LoginActivity
+                                    });
+                        }
+                    } else {
+                        // If sign in fails, display a message to the user.
+                        Toast.makeText(SignUpActivity.this, "회원가입 실패: " + task.getException().getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

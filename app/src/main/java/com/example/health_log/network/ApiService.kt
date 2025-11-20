@@ -1,6 +1,7 @@
 package com.example.health_log.network
 
 import com.example.health_log.Comment
+import com.example.health_log.SignUpRequest
 import com.example.health_log.TrainerProfile
 import com.example.health_log.Video
 import com.example.health_log.VideoCreateRequest
@@ -17,6 +18,9 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
+
+    @POST("signup/")
+    fun signup(@Body request: SignUpRequest): Call<Void>
 
     @GET("videos/")
     fun getVideos(@Query("tag") tag: String?): Call<List<Video>>
