@@ -6,7 +6,7 @@ from users.models import TrainerProfile
 
 class VideoListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = VideoSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny] # Temporarily changed for diagnostics
 
     def get_queryset(self):
         queryset = Video.objects.all()
