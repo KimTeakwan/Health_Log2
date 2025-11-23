@@ -40,16 +40,25 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         }
         holder.commentText.setText(comment.getText());
 
-        // Show adopt button only for trainer's comments
-        if (comment.getUser() != null && "trainer".equals(comment.getUser().getRole())) {
-            holder.adoptButton.setVisibility(View.VISIBLE);
-            holder.adoptButton.setOnClickListener(v -> {
-                if (adoptClickListener != null) {
-                    adoptClickListener.onAdoptClick(position);
-                }
-            });
+        if (comment.isAdopted()) {
+            holder.adoptedBadge.setVisibility(View.VISIBLE);
+            holder.adoptButton.setVisibility(View.GONE); // Can't adopt an already adopted comment
+            holder.itemView.setBackgroundColor(holder.itemView.getContext().getResources().getColor(android.R.color.holo_green_light, null));
         } else {
-            holder.adoptButton.setVisibility(View.GONE);
+            holder.adoptedBadge.setVisibility(View.GONE);
+            holder.itemView.setBackgroundColor(holder.itemView.getContext().getResources().getColor(android.R.color.transparent, null));
+
+            // Show adopt button only for trainer's comments if it's not adopted yet
+            if (comment.getUser() != null && "trainer".equals(comment.getUser().getRole())) {
+                holder.adoptButton.setVisibility(View.VISIBLE);
+                holder.adoptButton.setOnClickListener(v -> {
+                    if (adoptClickListener != null) {
+                        adoptClickListener.onAdoptClick(position);
+                    }
+                });
+            } else {
+                holder.adoptButton.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -62,12 +71,14 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         TextView commentUser;
         TextView commentText;
         Button adoptButton;
+        TextView adoptedBadge;
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
             commentUser = itemView.findViewById(R.id.commentUser);
             commentText = itemView.findViewById(R.id.commentText);
             adoptButton = itemView.findViewById(R.id.adoptButton);
+            adoptedBadge = itemView.findViewById(R.id.adoptedBadge);
         }
     }
 }

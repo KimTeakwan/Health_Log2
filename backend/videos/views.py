@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Count, F
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Video, Like, Comment, Tag
@@ -11,6 +11,8 @@ class VideoListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Video.objects.all()
+
+        # Search by query (title, description, tags)
         query = self.request.query_params.get('q', None)
         if query:
             queryset = queryset.filter(
@@ -18,6 +20,16 @@ class VideoListCreateAPIView(generics.ListCreateAPIView):
                 Q(description__icontains=query) |
                 Q(tags__name__icontains=query)
             ).distinct()
+
+        # Sorting
+        sort_by = self.request.query_params.get('sort_by', 'latest') # Default to latest
+        if sort_by == 'popular':
+            queryset = queryset.annotate(likes_count_total=Count('likes')).order_by('-likes_count_total', '-created_at')
+        elif sort_by == 'adopted':
+            queryset = queryset.annotate(adopted_comments_count_total=Count('comments', filter=Q(comments__is_adopted=True))).order_by('-adopted_comments_count_total', '-created_at')
+        else: # 'latest' or any other value
+            queryset = queryset.order_by('-created_at')
+            
         return queryset
 
     def perform_create(self, serializer):

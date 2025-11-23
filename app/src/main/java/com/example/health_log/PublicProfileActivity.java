@@ -33,6 +33,7 @@ public class PublicProfileActivity extends AppCompatActivity {
     private TextView emailTextView;
     private TextView followerCountTextView;
     private TextView followingCountTextView;
+    private TextView adoptedCommentsCountTextView;
     private Button followButton;
     private RecyclerView videosRecyclerView;
     private SimpleVideoAdapter videoAdapter;
@@ -60,18 +61,21 @@ public class PublicProfileActivity extends AppCompatActivity {
         public int getFollowerCount() { return follower_count; }
         public int getFollowingCount() { return following_count; }
         public boolean isFollowing() { return is_following; }
+        public String getRole() { return role; }
     }
 
     public static class ProfileData {
         private String public_email;
         private String instagram_id;
         private String profile_image_url;
+        private int adopted_comment_count;
         // Add other profile fields if needed (height, weight, specialty, etc.)
 
         // Getters
         public String getPublicEmail() { return public_email; }
         public String getInstagramId() { return instagram_id; }
         public String getProfileImageUrl() { return profile_image_url; }
+        public int getAdoptedCommentCount() { return adopted_comment_count; }
     }
 
     public static class SimpleVideo {
@@ -99,6 +103,7 @@ public class PublicProfileActivity extends AppCompatActivity {
         emailTextView = findViewById(R.id.email_text);
         followerCountTextView = findViewById(R.id.follower_count_text);
         followingCountTextView = findViewById(R.id.following_count_text);
+        adoptedCommentsCountTextView = findViewById(R.id.adopted_comments_count);
         followButton = findViewById(R.id.follow_button);
         videosRecyclerView = findViewById(R.id.videos_recycler_view);
 
@@ -178,9 +183,19 @@ public class PublicProfileActivity extends AppCompatActivity {
             } else {
                 emailTextView.setVisibility(View.GONE);
             }
+
+            // Conditionally display adopted comments count for trainers
+            if ("trainer".equals(data.getRole())) { // Check the role from the main response
+                int adoptedCommentCount = profile.getAdoptedCommentCount();
+                adoptedCommentsCountTextView.setText("채택된 댓글: " + adoptedCommentCount + "개");
+                adoptedCommentsCountTextView.setVisibility(View.VISIBLE);
+            } else {
+                adoptedCommentsCountTextView.setVisibility(View.GONE);
+            }
         } else {
             instagramTextView.setVisibility(View.GONE);
             emailTextView.setVisibility(View.GONE);
+            adoptedCommentsCountTextView.setVisibility(View.GONE);
         }
 
         // Update RecyclerView with videos

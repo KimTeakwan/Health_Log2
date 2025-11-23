@@ -40,6 +40,8 @@ public class VideoDetailActivity extends AppCompatActivity {
     private int videoId;
     private CommentAdapter commentAdapter;
     private List<Comment> commentList = new ArrayList<>();
+    private boolean isLiked = false;
+    private int likesCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +88,11 @@ public class VideoDetailActivity extends AppCompatActivity {
                     Video video = response.body();
                     videoTitle.setText(video.getTitle());
                     videoDescription.setText(video.getDescription());
-                    likeButton.setText("Like (" + video.getLikesCount() + ")");
+                    
+                    // Store like status and count
+                    isLiked = video.isLiked();
+                    likesCount = video.getLikesCount();
+                    updateLikeButtonUI();
 
                     String videoUrl = video.getVideoFile();
                     if (videoUrl != null && !videoUrl.isEmpty()) {
@@ -118,19 +124,51 @@ public class VideoDetailActivity extends AppCompatActivity {
         });
     }
 
+    private void updateLikeButtonUI() {
+        if (isLiked) {
+            likeButton.setText("Liked (" + likesCount + ")");
+        } else {
+            likeButton.setText("Like (" + likesCount + ")");
+        }
+    }
     private void likeVideo() {
+        // Optimistic UI Update
+        isLiked = !isLiked;
+        if (isLiked) {
+            likesCount++;
+        } else {
+            likesCount--;
+        }
+        updateLikeButtonUI();
+
         apiService.likeVideo(videoId).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
-                if (response.isSuccessful()) {
-                    getVideoDetails(); // Refresh video details to update like count
-                } else {
+                // The backend call was successful. The UI is already updated.
+                // We could re-fetch to ensure consistency, but for a like action, it's often not necessary.
+                if (!response.isSuccessful()) {
+                    // If the server failed, revert the change
+                    isLiked = !isLiked;
+                    if (isLiked) {
+                        likesCount++;
+                    } else {
+                        likesCount--;
+                    }
+                    updateLikeButtonUI();
                     Toast.makeText(VideoDetailActivity.this, "Failed to like video", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
+                // The network call failed, revert the change
+                isLiked = !isLiked;
+                if (isLiked) {
+                    likesCount++;
+                } else {
+                    likesCount--;
+                }
+                updateLikeButtonUI();
                 Toast.makeText(VideoDetailActivity.this, "An error occurred", Toast.LENGTH_SHORT).show();
             }
         });
@@ -148,11 +186,15 @@ public class VideoDetailActivity extends AppCompatActivity {
         apiService.postComment(videoId, comment).enqueue(new Callback<Comment>() {
             @Override
             public void onResponse(Call<Comment> call, Response<Comment> response) {
-                if (response.isSuccessful()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    // Instead of refreshing everything, just add the new comment to the list
+                    Comment newComment = response.body();
+                    commentList.add(0, newComment);
+                    commentAdapter.notifyItemInserted(0);
+                    commentsRecyclerView.scrollToPosition(0);
                     commentEditText.setText("");
-                    getVideoDetails(); // Refresh video details to show new comment
                 } else {
-                    Toast.makeText(VideoDetailActivity.this, "Failed to post comment", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(VideoDetailActivity.this, "Failed to post comment: " + response.code(), Toast.LENGTH_SHORT).show();
                 }
             }
 

@@ -33,6 +33,16 @@
         android:text="user@example.com"
         android:textSize="16sp" />
 
+    <TextView
+        android:id="@+id/adopted_comments_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        tools:text="채택된 댓글: 5개" />
+
     <Button
         android:id="@+id/btn_edit_profile"
         android:layout_width="match_parent"

@@ -28,7 +28,7 @@ interface ApiService {
 
     // Backend uses 'q' for general search, not 'tag'. Modified from .kt, matched to .java
     @GET("videos/")
-    fun getVideos(@Query("q") searchQuery: String?): Call<List<Video>>
+    fun getVideos(@Query("q") searchQuery: String?, @Query("sort_by") sortBy: String?): Call<List<Video>>
 
     @POST("videos/")
     fun createVideoRecord(@Body request: VideoCreateRequest): Call<Video>
