@@ -31,7 +31,13 @@ class VideoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Video
-        fields = ['id', 'title', 'description', 'video_file', 'uploader', 'created_at', 'comments', 'likes_count', 'tags']
+        fields = ['id', 'title', 'description', 'video_file', 'uploader', 'requests_feedback', 'created_at', 'comments', 'likes_count', 'tags']
 
     def get_likes_count(self, obj):
         return obj.likes.count()
+
+
+class SimpleVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Video
+        fields = ['id', 'title', 'video_file']

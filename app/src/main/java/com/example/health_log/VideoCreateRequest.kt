@@ -7,5 +7,7 @@ data class VideoCreateRequest(
     val description: String,
     @SerializedName("video_file")
     val videoFileUrl: String,
-    val tags: List<String>
+    val tags: List<String>,
+    @SerializedName("requests_feedback")
+    val requestsFeedback: Boolean
 )

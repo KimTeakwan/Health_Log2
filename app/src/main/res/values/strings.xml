@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">health_log</string>
+
+    <string name="tab_home">홈</string>
+    <string name="tab_chest">가슴</string>
+    <string name="tab_back">등</string>
+    <string name="tab_shoulder">어깨</string>
+    <string name="tab_legs">하체</string>
+    <string name="tab_arms">팔</string>
+
+    <string name="filter_latest">최신순</string>
+    <string name="filter_popular">인기순</string>
+    <string name="filter_most_adopted">채택순</string>
 </resources>

@@ -80,6 +80,10 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
 
+    // Glide
+    implementation(libs.glide)
+    annotationProcessor(libs.glide.compiler)
+
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
     implementation("com.google.firebase:firebase-storage")

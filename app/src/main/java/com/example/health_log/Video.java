@@ -13,6 +13,8 @@ public class Video {
     @SerializedName("video_file")
     private String videoFile;
 
+    private boolean requests_feedback;
+
     private User uploader;
 
     @SerializedName("created_at")
@@ -86,7 +88,28 @@ public class Video {
         return tags;
     }
 
+    public boolean isRequestsFeedback() {
+        return requests_feedback;
+    }
+
     // --- Setters (필요한 경우 추가) ---
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setVideoFile(String videoFile) {
+        this.videoFile = videoFile;
+    }
+
+    public void setRequestsFeedback(boolean requests_feedback) {
+        this.requests_feedback = requests_feedback;
+    }
+
     public void setUploader(String uploaderName) {
         // User 객체를 간편하게 설정하기 위한 유틸리티성 Setter (선택사항)
         if (this.uploader == null) {

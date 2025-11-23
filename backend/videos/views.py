@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from .models import Video, Like, Comment, Tag
@@ -10,9 +11,13 @@ class VideoListCreateAPIView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         queryset = Video.objects.all()
-        tag_name = self.request.query_params.get('tag', None)
-        if tag_name is not None:
-            queryset = queryset.filter(tags__name__iexact=tag_name)
+        query = self.request.query_params.get('q', None)
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(tags__name__icontains=query)
+            ).distinct()
         return queryset
 
     def perform_create(self, serializer):
@@ -47,9 +52,23 @@ class CommentCreateAPIView(generics.CreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def create(self, request, *args, **kwargs):
+        video_id = self.kwargs.get('pk')
+        video = generics.get_object_or_404(Video.objects.all(), pk=video_id)
+
+        if video.requests_feedback and request.user.role != 'trainer':
+            return Response(
+                {'detail': 'Only trainers can comment on videos requesting feedback.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         video_id = self.kwargs.get('pk')
-        video = Video.objects.get(pk=video_id)
+        # The video object is already fetched in the create method, 
+        # but this view doesn't easily share it. Re-fetching is simple enough.
+        video = generics.get_object_or_404(Video.objects.all(), pk=video_id)
         serializer.save(user=self.request.user, video=video)
 
 class CommentAdoptAPIView(generics.UpdateAPIView):

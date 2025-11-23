@@ -38,6 +38,11 @@ public class VideoCardAdapter extends RecyclerView.Adapter<VideoCardAdapter.Vide
         holder.title.setText(video.getTitle());
         if (video.getUploader() != null) {
             holder.uploader.setText(video.getUploader().getUsername());
+            holder.uploader.setOnClickListener(v -> {
+                Intent intent = new Intent(context, PublicProfileActivity.class);
+                intent.putExtra(PublicProfileActivity.EXTRA_USER_ID, video.getUploader().getId());
+                context.startActivity(intent);
+            });
         }
         holder.likesComments.setText(video.getLikesCount() + " likes  " + video.getComments().size() + " comments");
         holder.uploadDate.setText(video.getCreatedAt());

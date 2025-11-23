@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
@@ -87,11 +88,18 @@ public class VideoDetailActivity extends AppCompatActivity {
                     videoDescription.setText(video.getDescription());
                     likeButton.setText("Like (" + video.getLikesCount() + ")");
 
-                    // TODO: Set video URI from video.getVideoFile()
-                    // String videoPath = "android.resource://" + getPackageName() + "/" + R.raw.sample_video;
-                    // Uri uri = Uri.parse(videoPath);
-                    // videoView.setVideoURI(uri);
-                    // videoView.start();
+                    String videoUrl = video.getVideoFile();
+                    if (videoUrl != null && !videoUrl.isEmpty()) {
+                        Uri uri = Uri.parse(videoUrl);
+                        videoView.setVideoURI(uri);
+
+                        MediaController mediaController = new MediaController(VideoDetailActivity.this);
+                        mediaController.setAnchorView(videoView);
+                        videoView.setMediaController(mediaController);
+                        videoView.start();
+                    } else {
+                        Toast.makeText(VideoDetailActivity.this, "Video URL not available", Toast.LENGTH_SHORT).show();
+                    }
 
                     commentList.clear();
                     commentList.addAll(video.getComments());

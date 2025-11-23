@@ -12,6 +12,7 @@ class Video(models.Model):
     description = models.TextField()
     video_file = models.URLField(max_length=1024)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    requests_feedback = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     tags = models.ManyToManyField(Tag, blank=True)
 

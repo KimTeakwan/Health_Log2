@@ -59,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 String selectedTag = tab.getText().toString();
-                if ("Home".equalsIgnoreCase(selectedTag)) {
+                if (getString(R.string.tab_home).equalsIgnoreCase(selectedTag)) {
                     getVideos(null);
                 } else {
                     getVideos(selectedTag);

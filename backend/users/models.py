@@ -16,6 +16,9 @@ class CustomUser(AbstractUser):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='userprofile')
+    profile_image_url = models.URLField(max_length=1024, blank=True)
+    public_email = models.EmailField(max_length=255, blank=True)
+    instagram_id = models.CharField(max_length=100, blank=True)
     height = models.FloatField(null=True, blank=True)
     weight = models.FloatField(null=True, blank=True)
     goal = models.TextField(max_length=500, blank=True)
@@ -26,6 +29,9 @@ class UserProfile(models.Model):
 
 class TrainerProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='trainerprofile')
+    profile_image_url = models.URLField(max_length=1024, blank=True)
+    public_email = models.EmailField(max_length=255, blank=True)
+    instagram_id = models.CharField(max_length=100, blank=True)
     specialty = models.CharField(max_length=100, blank=True)
     certification = models.TextField(max_length=500, blank=True)
     adopted_comment_count = models.IntegerField(default=0)
@@ -41,3 +47,14 @@ def create_user_profile(sender, instance, created, **kwargs):
             UserProfile.objects.create(user=instance)
         elif instance.role == 'trainer':
             TrainerProfile.objects.create(user=instance)
+
+class Follow(models.Model):
+    follower = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='following_set', on_delete=models.CASCADE)
+    following = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='follower_set', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('follower', 'following')
+
+    def __str__(self):
+        return f'{self.follower} follows {self.following}'

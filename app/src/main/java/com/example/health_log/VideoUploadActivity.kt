@@ -82,6 +82,7 @@ class VideoUploadActivity : AppCompatActivity() {
         val title = binding.titleEditText.text.toString().trim()
         val description = binding.descriptionEditText.text.toString().trim()
         val tags = binding.tagsEditText.text.toString().trim().split(",").map { it.trim() }
+        val requestsFeedback = binding.feedbackSwitch.isChecked // Get the state of the toggle
 
         if (title.isEmpty()) {
             Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
@@ -103,7 +104,7 @@ class VideoUploadActivity : AppCompatActivity() {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
                     val downloadUrl = uri.toString()
                     Log.d("VideoUploadActivity", "Firebase URL: $downloadUrl")
-                    createVideoRecordInBackend(title, description, downloadUrl, tags)
+                    createVideoRecordInBackend(title, description, downloadUrl, tags, requestsFeedback)
                 }
             }
             .addOnFailureListener { e ->
@@ -112,14 +113,15 @@ class VideoUploadActivity : AppCompatActivity() {
             }
     }
 
-    private fun createVideoRecordInBackend(title: String, description: String, videoUrl: String, tags: List<String>) {
+    private fun createVideoRecordInBackend(title: String, description: String, videoUrl: String, tags: List<String>, requestsFeedback: Boolean) {
         Toast.makeText(this, "백엔드에 정보 저장 중...", Toast.LENGTH_SHORT).show()
 
         val request = VideoCreateRequest(
             title = title,
             description = description,
             videoFileUrl = videoUrl,
-            tags = tags
+            tags = tags,
+            requestsFeedback = requestsFeedback
         )
 
         apiService.createVideoRecord(request).enqueue(object : Callback<Video> {
