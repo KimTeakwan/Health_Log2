@@ -13,7 +13,8 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ['id', 'user', 'video', 'text', 'is_adopted', 'created_at']
-        read_only_fields = ['is_adopted']
+        read_only_fields = ['is_adopted', 'video']
+        extra_kwargs = {'text': {'required': False}}
 
 class LikeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +25,7 @@ class VideoSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
     likes_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
+    uploader = UserSerializer(read_only=True)
     tags = serializers.SlugRelatedField(
         many=True,
         queryset=Tag.objects.all(),
@@ -32,7 +34,7 @@ class VideoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Video
-        fields = ['id', 'title', 'description', 'video_file', 'uploader', 'requests_feedback', 'created_at', 'comments', 'likes_count', 'is_liked', 'tags']
+        fields = ['id', 'title', 'description', 'video_file', 'thumbnail', 'uploader', 'requests_feedback', 'visibility', 'view_count', 'created_at', 'comments', 'likes_count', 'is_liked', 'tags']
 
     def get_likes_count(self, obj):
         return obj.likes.count()

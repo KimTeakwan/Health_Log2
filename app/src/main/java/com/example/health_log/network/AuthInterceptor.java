@@ -1,8 +1,8 @@
 package com.example.health_log.network;
 
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.android.gms.tasks.Tasks;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -17,27 +17,25 @@ public class AuthInterceptor implements Interceptor {
         Request originalRequest = chain.request();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        // If the user is not logged in, proceed with the original request
         if (user == null) {
-            // If no user is logged in, proceed with the original request
             return chain.proceed(originalRequest);
         }
 
         try {
-            // Get the token, blocking the thread.
-            // Note: This is a simplification. In a real production app,
-            // you might want to handle the async nature of getToken more gracefully.
-            String token = Tasks.await(user.getIdToken(true)).getToken();
+            // This is a blocking call to get the token.
+            // OkHttp interceptors run on a background thread, so this is acceptable.
+            String idToken = Tasks.await(user.getIdToken(false)).getToken();
 
             Request newRequest = originalRequest.newBuilder()
-                    .header("Authorization", "Bearer " + token)
+                    .header("Authorization", "Bearer " + idToken)
                     .build();
             return chain.proceed(newRequest);
 
         } catch (ExecutionException | InterruptedException e) {
-            // Handle error, for example, by proceeding with the original request
-            // or by throwing an IOException.
             e.printStackTrace();
-            return chain.proceed(originalRequest);
+            // Propagate the failure instead of proceeding without auth
+            throw new IOException("Failed to get Firebase ID token", e);
         }
     }
 }

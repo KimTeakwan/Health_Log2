@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Allow read access for all authenticated users.
+    // This can be configured to be more restrictive if needed.
+    match /{allPaths=**} {
+      allow read: if request.auth != null;
+    }
+
+    // A user can only write to their own profile image path.
+    // Image size is limited to 5MB.
+    match /profile_images/{userId}/{imageName} {
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // A user can only write to their own video path.
+    // Video size is limited to 50MB.
+    match /videos/{userId}/{videoName} {
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 50 * 1024 * 1024;
+    }
+  }
+}

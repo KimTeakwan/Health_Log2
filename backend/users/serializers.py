@@ -60,18 +60,62 @@ class PublicProfileSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'role')
+        fields = ('id', 'username', 'first_name', 'role')
+
+class SimpleUserSerializer(serializers.ModelSerializer):
+    profile_image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'profile_image_url')
+
+    def get_profile_image_url(self, obj):
+        if obj.role == 'user':
+            try:
+                return obj.userprofile.profile_image_url
+            except UserProfile.DoesNotExist:
+                return None
+        elif obj.role == 'trainer':
+            try:
+                return obj.trainerprofile.profile_image_url
+            except TrainerProfile.DoesNotExist:
+                return None
+        return None
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    first_name = serializers.CharField(source='user.first_name', read_only=True)
+    follower_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+
     class Meta:
         model = UserProfile
-        fields = ('profile_image_url', 'public_email', 'instagram_id', 'height', 'weight', 'goal')
+        fields = ('user_id', 'first_name', 'profile_image_url', 'public_email', 'instagram_id', 'height', 'weight', 'goal', 'follower_count', 'following_count')
+
+    def get_follower_count(self, obj):
+        return obj.user.follower_set.count()
+
+    def get_following_count(self, obj):
+        return obj.user.following_set.count()
 
 class TrainerProfileSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    level_display = serializers.SerializerMethodField()
+    follower_count = serializers.SerializerMethodField()
+    following_count = serializers.SerializerMethodField()
+
     class Meta:
         model = TrainerProfile
-        fields = ('user', 'profile_image_url', 'public_email', 'instagram_id', 'specialty', 'certification', 'adopted_comment_count')
+        fields = ('user_id', 'profile_image_url', 'public_email', 'instagram_id', 'specialty', 'certification', 'adopted_comment_count', 'level', 'level_display', 'follower_count', 'following_count')
+
+    def get_level_display(self, obj):
+        return f"LV.{obj.level}"
+
+    def get_follower_count(self, obj):
+        return obj.user.follower_set.count()
+
+    def get_following_count(self, obj):
+        return obj.user.following_set.count()
 
 class CustomUserSerializer(serializers.ModelSerializer):
     """

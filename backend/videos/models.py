@@ -11,9 +11,16 @@ class Video(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     video_file = models.URLField(max_length=1024)
+    thumbnail = models.URLField(max_length=1024, blank=True, null=True)
     uploader = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     requests_feedback = models.BooleanField(default=False)
+    VISIBILITY_CHOICES = (
+        ('public', 'Public'),
+        ('followers_only', 'Followers Only'),
+    )
+    visibility = models.CharField(max_length=20, choices=VISIBILITY_CHOICES, default='public')
     created_at = models.DateTimeField(auto_now_add=True)
+    view_count = models.PositiveIntegerField(default=0)
     tags = models.ManyToManyField(Tag, blank=True)
 
     def __str__(self):

@@ -7,8 +7,12 @@ import com.example.health_log.TrainerProfile // From .kt
 import com.example.health_log.Video
 import com.example.health_log.VideoCreateRequest
 import com.google.gson.JsonElement // From .java
+import com.google.gson.JsonObject // Add this import
+import com.example.health_log.model.SimpleUser
+
 import retrofit2.Call
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.PATCH // From .java
 import retrofit2.http.POST
@@ -19,6 +23,7 @@ import retrofit2.http.Multipart // From .kt
 import retrofit2.http.Part // From .kt
 import okhttp3.MultipartBody // From .kt
 import okhttp3.RequestBody // From .kt
+import com.example.health_log.ReportRequestBody
 
 // Reconciled ApiService interface
 interface ApiService {
@@ -36,9 +41,11 @@ interface ApiService {
     @GET("videos/{id}/")
     fun getVideo(@Path("id") videoId: Int): Call<Video>
 
-    // Backend uses '/likes/', not '/like/'. Modified from .kt, matched to .java
     @POST("videos/{pk}/likes/")
     fun likeVideo(@Path("pk") videoId: Int): Call<Void>
+    
+    @DELETE("videos/{pk}/likes/")
+    fun unlikeVideo(@Path("pk") videoId: Int): Call<Void>
 
     @POST("videos/{pk}/comments/") // Use pk consistently. Matched to .java
     fun postComment(@Path("pk") videoId: Int, @Body comment: Comment): Call<Comment>
@@ -46,6 +53,9 @@ interface ApiService {
     // Backend uses POST for adoptComment. Modified from .kt, matched to .java
     @POST("comments/{pk}/adopt/")
     fun adoptComment(@Path("pk") commentId: Int): Call<Void>
+
+    @POST("reports/")
+    fun reportContent(@Body body: com.example.health_log.ReportBody): Call<Void>
 
     // From .java (for PublicProfileActivity)
     @GET("users/{pk}/")
@@ -55,13 +65,19 @@ interface ApiService {
     @POST("users/{pk}/follow/")
     fun followToggle(@Path("pk") userId: Int): Call<Void>
 
+    @GET("users/{pk}/followers/")
+    fun getFollowers(@Path("pk") userId: String): Call<List<SimpleUser>>
+
+    @GET("users/{pk}/following/")
+    fun getFollowing(@Path("pk") userId: String): Call<List<SimpleUser>>
+
     // From .java (for UserProfileActivity)
     @GET("profile/")
     fun getMyProfile(): Call<JsonElement>
 
     // From .java (for UserProfileActivity update)
     @PATCH("profile/")
-    fun updateProfile(@Body data: Map<String, Any>): Call<JsonElement>
+    fun updateProfile(@Body data: JsonObject): Call<JsonElement>
 
     // Original .kt method. Specific to TrainerProfile.
     @GET("users/profile/")

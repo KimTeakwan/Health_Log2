@@ -28,6 +28,9 @@ public class Video {
     @SerializedName("is_liked")
     private boolean isLiked;
 
+    @SerializedName("view_count")
+    private int viewCount;
+
     // ✅ [추가됨] UserProfileActivity에서 태그 리스트를 넘기고 있어서 필드를 추가했습니다.
     private List<String> tags;
 
@@ -90,6 +93,10 @@ public class Video {
         return isLiked;
     }
 
+    public int getViewCount() {
+        return viewCount;
+    }
+
     // ✅ 태그 Getter 추가
     public List<String> getTags() {
         return tags;
@@ -128,5 +135,9 @@ public class Video {
 
     public void setLikesCount(int likesCount) {
         this.likesCount = likesCount;
+    }
+
+    public void setLiked(boolean liked) {
+        isLiked = liked;
     }
 }

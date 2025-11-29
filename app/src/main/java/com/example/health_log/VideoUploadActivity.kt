@@ -82,7 +82,11 @@ class VideoUploadActivity : AppCompatActivity() {
         val title = binding.titleEditText.text.toString().trim()
         val description = binding.descriptionEditText.text.toString().trim()
         val tags = binding.tagsEditText.text.toString().trim().split(",").map { it.trim() }
-        val requestsFeedback = binding.feedbackSwitch.isChecked // Get the state of the toggle
+        val requestsFeedback = binding.feedbackSwitch.isChecked
+        val visibility = when (binding.visibilityRadioGroup.checkedRadioButtonId) {
+            R.id.followersOnlyRadioButton -> "followers_only"
+            else -> "public"
+        }
 
         if (title.isEmpty()) {
             Toast.makeText(this, "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
@@ -104,7 +108,7 @@ class VideoUploadActivity : AppCompatActivity() {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
                     val downloadUrl = uri.toString()
                     Log.d("VideoUploadActivity", "Firebase URL: $downloadUrl")
-                    createVideoRecordInBackend(title, description, downloadUrl, tags, requestsFeedback)
+                    createVideoRecordInBackend(title, description, downloadUrl, tags, requestsFeedback, visibility)
                 }
             }
             .addOnFailureListener { e ->
@@ -113,7 +117,7 @@ class VideoUploadActivity : AppCompatActivity() {
             }
     }
 
-    private fun createVideoRecordInBackend(title: String, description: String, videoUrl: String, tags: List<String>, requestsFeedback: Boolean) {
+    private fun createVideoRecordInBackend(title: String, description: String, videoUrl: String, tags: List<String>, requestsFeedback: Boolean, visibility: String) {
         Toast.makeText(this, "백엔드에 정보 저장 중...", Toast.LENGTH_SHORT).show()
 
         val request = VideoCreateRequest(
@@ -121,7 +125,8 @@ class VideoUploadActivity : AppCompatActivity() {
             description = description,
             videoFileUrl = videoUrl,
             tags = tags,
-            requestsFeedback = requestsFeedback
+            requestsFeedback = requestsFeedback,
+            visibility = visibility
         )
 
         apiService.createVideoRecord(request).enqueue(object : Callback<Video> {

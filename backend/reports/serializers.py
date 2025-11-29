@@ -19,7 +19,8 @@ class ReportSerializer(serializers.ModelSerializer):
             'reporter', 
             'content_type', 
             'object_id', 
-            'reason', 
+            'reason',
+            'description',
             'status', 
             'created_at'
         ]
@@ -46,8 +47,16 @@ class ReportSerializer(serializers.ModelSerializer):
         if not self.context['content_type_obj'].model_class().objects.filter(pk=object_id).exists():
             raise serializers.ValidationError(f"No object found with id {object_id} for the specified content type.")
         
+        reporter = self.context['request'].user
+
+        # Check if the reporter is the video uploader when reporting a comment
+        if self.context['content_type_obj'].model_class() == Comment:
+            comment = Comment.objects.get(pk=object_id)
+            if comment.video.uploader != reporter:
+                raise serializers.ValidationError("You are not authorized to report comments on this video.")
+
         # Prevent users from reporting themselves
-        if self.context['content_type_obj'].model_class() == CustomUser and object_id == self.context['request'].user.id:
+        if self.context['content_type_obj'].model_class() == CustomUser and object_id == reporter.id:
             raise serializers.ValidationError("You cannot report yourself.")
 
         return data
@@ -60,6 +69,7 @@ class ReportSerializer(serializers.ModelSerializer):
         content_type = self.context['content_type_obj']
         object_id = validated_data['object_id']
         reason = validated_data['reason']
+        description = validated_data.get('description', '')
 
         # Check for existing pending report to prevent duplicates
         existing_report = Report.objects.filter(
@@ -76,7 +86,8 @@ class ReportSerializer(serializers.ModelSerializer):
             reporter=reporter,
             content_type=content_type,
             object_id=object_id,
-            reason=reason
+            reason=reason,
+            description=description
         )
         return report
 

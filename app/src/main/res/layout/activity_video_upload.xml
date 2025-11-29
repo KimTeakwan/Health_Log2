@@ -133,7 +133,6 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <RadioButton android:id="@+id/publicRadioButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="공개"/>
-        <RadioButton android:id="@+id/privateRadioButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="비공개" android:layout_marginStart="16dp"/>
         <RadioButton android:id="@+id/followersOnlyRadioButton" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="팔로우만" android:layout_marginStart="16dp"/>
     </RadioGroup>
 

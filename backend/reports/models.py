@@ -23,6 +23,7 @@ class Report(models.Model):
     content_object = GenericForeignKey('content_type', 'object_id')
 
     reason = models.CharField(max_length=20, choices=ReportReason.choices, default=ReportReason.OTHER)
+    description = models.TextField(blank=True)
     status = models.CharField(max_length=20, choices=ReportStatus.choices, default=ReportStatus.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
 

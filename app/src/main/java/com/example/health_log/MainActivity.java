@@ -31,6 +31,7 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
+    public static final int VIDEO_DETAIL_REQUEST_CODE = 1001;
 
     private RecyclerView recyclerView;
     private VideoCardAdapter adapter;
@@ -137,6 +138,15 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @androidx.annotation.Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == VIDEO_DETAIL_REQUEST_CODE && resultCode == RESULT_OK) {
+            // Video detail has changed, refresh the list
+            getVideos(currentQuery, currentSortBy);
+        }
     }
 
     private void getVideos(String query, String sortBy) {

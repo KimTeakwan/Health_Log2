@@ -20,6 +20,7 @@ public class EditProfileActivity extends AppCompatActivity {
     private Button saveButton;
 
     private Uri selectedImageUri;
+    private boolean imageChanged = false; // Flag to track image changes
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +55,7 @@ public class EditProfileActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("newNickname", nicknameEditText.getText().toString());
-                if (selectedImageUri != null) {
+                if (imageChanged && selectedImageUri != null) {
                     resultIntent.putExtra("newImageUri", selectedImageUri.toString());
                 }
                 setResult(RESULT_OK, resultIntent);
@@ -69,6 +70,7 @@ public class EditProfileActivity extends AppCompatActivity {
         if (requestCode == GALLERY_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             selectedImageUri = data.getData();
             profileImageView.setImageURI(selectedImageUri);
+            imageChanged = true; // Mark that a new image has been selected
         }
     }
 }

@@ -3,9 +3,11 @@ package com.example.health_log;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,16 +42,23 @@ import retrofit2.Response;
 public class UserProfileActivity extends AppCompatActivity {
 
     private static final int EDIT_PROFILE_REQUEST_CODE = 200;
+    public static final int VIDEO_DETAIL_REQUEST_CODE = 1001;
+    private static final String TAG = "UserProfileActivity";
 
     private ImageView profileImageView;
     private TextView profileNameTextView;
     private TextView profileEmailTextView; // Added for email display
     private TextView adoptedCommentsCountTextView;
+    private TextView followerCountTextView;
+    private TextView followingCountTextView;
+    private ProgressBar progressBar;
+    private View contentLayout;
 
     private ApiService apiService;
     private FirebaseStorage storage; // FirebaseStorage instance
     private String currentUsername;
     private String currentProfileImageUrl;
+    private String currentUserId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,12 +66,16 @@ public class UserProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile);
 
         apiService = RetrofitClient.getApiService();
-        storage = FirebaseStorage.getInstance(); // Initialize FirebaseStorage
+        storage = FirebaseStorage.getInstance();
 
         profileImageView = findViewById(R.id.profile_image);
         profileNameTextView = findViewById(R.id.profile_name);
-        profileEmailTextView = findViewById(R.id.profile_email); // Initialize email TextView
+        profileEmailTextView = findViewById(R.id.profile_email);
         adoptedCommentsCountTextView = findViewById(R.id.adopted_comments_count);
+        followerCountTextView = findViewById(R.id.follower_count_text);
+        followingCountTextView = findViewById(R.id.following_count_text);
+        progressBar = findViewById(R.id.progress_bar);
+        contentLayout = findViewById(R.id.content_layout);
 
         setupButtons();
         loadProfileData();
@@ -87,15 +100,39 @@ public class UserProfileActivity extends AppCompatActivity {
             intent.putExtra("imageUri", currentProfileImageUrl);
             startActivityForResult(intent, EDIT_PROFILE_REQUEST_CODE);
         });
+
+        followerCountTextView.setOnClickListener(v -> {
+            if (currentUserId == null) return;
+            Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
+            intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
+            intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "followers");
+            startActivity(intent);
+        });
+
+        followingCountTextView.setOnClickListener(v -> {
+            if (currentUserId == null) return;
+            Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
+            intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
+            intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "following");
+            startActivity(intent);
+        });
     }
 
     private void loadProfileData() {
+        progressBar.setVisibility(View.VISIBLE);
+        contentLayout.setVisibility(View.GONE);
         apiService.getMyProfile().enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
+                progressBar.setVisibility(View.GONE);
+                contentLayout.setVisibility(View.VISIBLE);
                 if (response.isSuccessful() && response.body() != null) {
                     JsonObject fullProfileResponse = response.body().getAsJsonObject();
-                    
+
+                    if (fullProfileResponse.has("user_id") && !fullProfileResponse.get("user_id").isJsonNull()) {
+                        currentUserId = fullProfileResponse.get("user_id").getAsString();
+                    }
+
                     String userRole = null;
                     if (fullProfileResponse.has("role") && !fullProfileResponse.get("role").isJsonNull()) {
                         userRole = fullProfileResponse.get("role").getAsString();
@@ -105,10 +142,20 @@ public class UserProfileActivity extends AppCompatActivity {
                     if (fullProfileResponse.has("profile") && !fullProfileResponse.get("profile").isJsonNull()) {
                         profile = fullProfileResponse.get("profile").getAsJsonObject();
                     }
-                    
-                    currentUsername = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
-                    if(currentUsername == null || currentUsername.isEmpty()){
-                       currentUsername = "My Profile";
+
+                    // Parse first_name from the API response, handling both flat and nested structures
+                    if (fullProfileResponse.has("first_name") && !fullProfileResponse.get("first_name").isJsonNull()) {
+                        // Handles 'user' role structure
+                        currentUsername = fullProfileResponse.get("first_name").getAsString();
+                    } else if (fullProfileResponse.has("user") && fullProfileResponse.get("user").isJsonObject()) {
+                        // Handles 'trainer' role structure
+                        JsonObject userObject = fullProfileResponse.get("user").getAsJsonObject();
+                        if (userObject.has("first_name") && !userObject.get("first_name").isJsonNull()) {
+                            currentUsername = userObject.get("first_name").getAsString();
+                        }
+                    } else {
+                        // Fallback if first_name is not available in either structure
+                        currentUsername = "My Profile";
                     }
 
                     profileNameTextView.setText(currentUsername);
@@ -122,25 +169,36 @@ public class UserProfileActivity extends AppCompatActivity {
                     }
 
                     // Load profile image
-                    if (profile != null && profile.has("profile_image_url") && !profile.get("profile_image_url").isJsonNull()) {
-                        currentProfileImageUrl = profile.get("profile_image_url").getAsString();
+                    if (fullProfileResponse.has("profile_image_url") && !fullProfileResponse.get("profile_image_url").isJsonNull()) {
+                        currentProfileImageUrl = fullProfileResponse.get("profile_image_url").getAsString();
                         Glide.with(UserProfileActivity.this)
-                             .load(currentProfileImageUrl)
-                             .placeholder(R.drawable.ic_person)
-                             .error(R.drawable.ic_person)
-                             .into(profileImageView);
+                                .load(currentProfileImageUrl)
+                                .placeholder(R.drawable.ic_person)
+                                .error(R.drawable.ic_person)
+                                .into(profileImageView);
                     } else {
                         profileImageView.setImageResource(R.drawable.ic_person); // Default image
                         currentProfileImageUrl = null; // Clear if no URL from backend
                     }
-                    
-                    if ("trainer".equals(userRole) && profile != null && profile.has("adopted_comment_count") && !profile.get("adopted_comment_count").isJsonNull()) {
-                        int adoptedCommentCount = profile.get("adopted_comment_count").getAsInt();
+
+                    if ("trainer".equals(userRole) && fullProfileResponse.has("adopted_comment_count") && !fullProfileResponse.get("adopted_comment_count").isJsonNull()) {
+                        int adoptedCommentCount = fullProfileResponse.get("adopted_comment_count").getAsInt();
                         adoptedCommentsCountTextView.setText("채택된 댓글: " + adoptedCommentCount + "개");
                         adoptedCommentsCountTextView.setVisibility(View.VISIBLE);
                     } else {
                         adoptedCommentsCountTextView.setVisibility(View.GONE);
                     }
+
+                    // Display follower and following counts
+                    if (fullProfileResponse.has("follower_count") && !fullProfileResponse.get("follower_count").isJsonNull()) {
+                        int followerCount = fullProfileResponse.get("follower_count").getAsInt();
+                        followerCountTextView.setText("팔로워: " + followerCount);
+                    }
+                    if (fullProfileResponse.has("following_count") && !fullProfileResponse.get("following_count").isJsonNull()) {
+                        int followingCount = fullProfileResponse.get("following_count").getAsInt();
+                        followingCountTextView.setText("팔로잉: " + followingCount);
+                    }
+
 
                     loadUserVideos(currentUsername);
 
@@ -151,10 +209,14 @@ public class UserProfileActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<JsonElement> call, Throwable t) {
+                progressBar.setVisibility(View.GONE);
                 Toast.makeText(UserProfileActivity.this, "네트워크 오류", Toast.LENGTH_SHORT).show();
             }
         });
     }
+    
+    // ... rest of the file
+    
     
     private void loadUserVideos(String username) {
         RecyclerView recyclerView = findViewById(R.id.user_videos_recycler_view);
@@ -185,30 +247,51 @@ public class UserProfileActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == VIDEO_DETAIL_REQUEST_CODE && resultCode == RESULT_OK) {
+            loadProfileData();
+            return;
+        }
+
         if (requestCode == EDIT_PROFILE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             String newNickname = data.getStringExtra("newNickname");
             String newImageUriString = data.getStringExtra("newImageUri");
 
+            JsonObject updateData = new JsonObject();
+            boolean hasNicknameChanged = newNickname != null && !newNickname.equals(currentUsername);
+
+            if (hasNicknameChanged) {
+                // Optimistic UI Update for nickname
+                currentUsername = newNickname;
+                profileNameTextView.setText(currentUsername);
+
+                // Prepare nickname data for backend update
+                JsonObject userData = new JsonObject();
+                userData.addProperty("first_name", newNickname);
+                updateData.add("user", userData);
+            }
+
             if (newImageUriString != null) {
+                // A new image was selected, start upload flow
                 Uri imageUri = Uri.parse(newImageUriString);
-                uploadProfileImageToFirebaseAndSaveProfile(imageUri);
+                // Pass the updateData object which may contain nickname changes
+                uploadProfileImageToFirebaseAndSaveProfile(imageUri, updateData);
+            } else if (hasNicknameChanged) {
+                // Only nickname was changed, no new image
+                updateProfileOnBackend(updateData);
             } else {
-                // If no new image, but other data was edited, update profile without image upload
-                // Currently, newNickname is not sent to backend easily
-                Map<String, Object> updateData = new HashMap<>();
-                // Potentially add newNickname to updateData if backend supported
-                if (!updateData.isEmpty()) {
-                    updateProfileOnBackend(updateData);
-                } else {
-                    Toast.makeText(UserProfileActivity.this, "수정할 내용이 없습니다.", Toast.LENGTH_SHORT).show();
-                }
+                // No changes detected
+                Toast.makeText(UserProfileActivity.this, "수정할 내용이 없습니다.", Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    private void uploadProfileImageToFirebaseAndSaveProfile(Uri imageUri) {
+    private void uploadProfileImageToFirebaseAndSaveProfile(Uri imageUri, JsonObject updateData) {
         if (imageUri == null) {
-            Toast.makeText(this, "업로드할 이미지가 없습니다.", Toast.LENGTH_SHORT).show();
+            // This case should ideally not be reached if called from onActivityResult correctly
+            if (updateData.size() > 0) {
+                updateProfileOnBackend(updateData);
+            }
             return;
         }
 
@@ -216,34 +299,26 @@ public class UserProfileActivity extends AppCompatActivity {
 
         String fileName = "profile_images/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + UUID.randomUUID().toString();
         storage.getReference().child(fileName).putFile(imageUri)
-            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    storage.getReference().child(fileName).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
+                .addOnSuccessListener(taskSnapshot -> taskSnapshot.getStorage().getDownloadUrl()
+                        .addOnSuccessListener(uri -> {
                             String downloadUrl = uri.toString();
                             currentProfileImageUrl = downloadUrl; // Update local URL
-                            Map<String, Object> updateData = new HashMap<>();
-                            updateData.put("profile_image_url", downloadUrl);
-                            updateProfileOnBackend(updateData);
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
+                            updateData.addProperty("profile_image_url", downloadUrl);
+                            updateProfileOnBackend(updateData); // Update backend with all changes
+                        })
+                        .addOnFailureListener(e -> {
                             Toast.makeText(UserProfileActivity.this, "이미지 URL 가져오기 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+                            // If nickname change was also pending, decide if you want to save it anyway
+                            // For now, we stop.
+                        }))
+                .addOnFailureListener(e -> {
                     Toast.makeText(UserProfileActivity.this, "이미지 업로드 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                }
-            });
+                    // If nickname change was also pending, decide if you want to save it anyway
+                    // For now, we stop.
+                });
     }
 
-    private void updateProfileOnBackend(Map<String, Object> updateData) {
+    private void updateProfileOnBackend(JsonObject updateData) {
         apiService.updateProfile(updateData).enqueue(new Callback<JsonElement>() {
             @Override
             public void onResponse(Call<JsonElement> call, Response<JsonElement> response) {
