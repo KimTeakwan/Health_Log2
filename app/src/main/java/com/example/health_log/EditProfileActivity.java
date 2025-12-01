@@ -56,7 +56,8 @@ public class EditProfileActivity extends AppCompatActivity {
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("newNickname", nicknameEditText.getText().toString());
                 if (imageChanged && selectedImageUri != null) {
-                    resultIntent.putExtra("newImageUri", selectedImageUri.toString());
+                    resultIntent.setData(selectedImageUri);
+                    resultIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 }
                 setResult(RESULT_OK, resultIntent);
                 finish();

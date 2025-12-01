@@ -60,6 +60,7 @@ public class VideoDetailActivity extends AppCompatActivity implements CommentAda
     private int likesCount = 0;
     private boolean isDataChanged = false;
 
+    private MediaController mediaController;
     private String videoUploaderId;
     private String currentUserId;
 
@@ -120,6 +121,19 @@ public class VideoDetailActivity extends AppCompatActivity implements CommentAda
     @Override
     public void onBackPressed() {
         finishWithResult();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        // Hide MediaController to prevent window leak
+        if (mediaController != null && mediaController.isShowing()) {
+            mediaController.hide();
+        }
+        // Pause the video to prevent leaks and background playback
+        if (videoView != null && videoView.isPlaying()) {
+            videoView.pause();
+        }
     }
 
     private void finishWithResult() {
@@ -205,7 +219,7 @@ public class VideoDetailActivity extends AppCompatActivity implements CommentAda
                             Uri uri = Uri.parse(videoUrl);
                             videoView.setVideoURI(uri);
 
-                            MediaController mediaController = new MediaController(VideoDetailActivity.this);
+                            mediaController = new MediaController(VideoDetailActivity.this);
                             mediaController.setAnchorView(videoContainer);
                             videoView.setMediaController(mediaController);
                             videoView.start();

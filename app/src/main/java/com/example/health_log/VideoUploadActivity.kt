@@ -98,9 +98,17 @@ class VideoUploadActivity : AppCompatActivity() {
             return
         }
 
+        val user = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+        val userId = user?.uid
+
+        if (userId == null) {
+            Toast.makeText(this, "인증되지 않은 사용자입니다. 다시 로그인해주세요.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         Toast.makeText(this, "Firebase에 업로드 시작...", Toast.LENGTH_SHORT).show()
 
-        val fileName = "videos/${UUID.randomUUID()}"
+        val fileName = "videos/$userId/${UUID.randomUUID()}"
         val storageRef = storage.reference.child(fileName)
 
         storageRef.putFile(videoUri!!)

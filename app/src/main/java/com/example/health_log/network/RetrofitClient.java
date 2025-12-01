@@ -7,7 +7,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitClient {
 
     private static Retrofit retrofit = null;
-    private static final String BASE_URL = "http://10.0.2.2:8000/api/";
+    // IMPORTANT: Replace with your computer's IP address to connect from a real device.
+    // On Windows, run 'ipconfig' in Command Prompt.
+    // On macOS/Linux, run 'ifconfig' or 'ip addr' in the terminal.
+    // The backend server must be running on your computer and accessible on the same network.
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
 
     public static ApiService getApiService() {
         if (retrofit == null) {

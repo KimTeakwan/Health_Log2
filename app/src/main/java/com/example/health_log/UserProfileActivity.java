@@ -83,39 +83,47 @@ public class UserProfileActivity extends AppCompatActivity {
 
     private void setupButtons() {
         Button logoutButton = findViewById(R.id.btn_logout);
-        logoutButton.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            // Clear any local user data if necessary
-            Toast.makeText(UserProfileActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(UserProfileActivity.this, LoginActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-            finish();
-        });
+        if (logoutButton != null) {
+            logoutButton.setOnClickListener(v -> {
+                FirebaseAuth.getInstance().signOut();
+                // Clear any local user data if necessary
+                Toast.makeText(UserProfileActivity.this, "로그아웃 되었습니다.", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(UserProfileActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            });
+        }
 
         Button editProfileButton = findViewById(R.id.btn_edit_profile);
-        editProfileButton.setOnClickListener(v -> {
-            Intent intent = new Intent(UserProfileActivity.this, EditProfileActivity.class);
-            intent.putExtra("nickname", currentUsername);
-            intent.putExtra("imageUri", currentProfileImageUrl);
-            startActivityForResult(intent, EDIT_PROFILE_REQUEST_CODE);
-        });
+        if (editProfileButton != null) {
+            editProfileButton.setOnClickListener(v -> {
+                Intent intent = new Intent(UserProfileActivity.this, EditProfileActivity.class);
+                intent.putExtra("nickname", currentUsername);
+                intent.putExtra("imageUri", currentProfileImageUrl);
+                startActivityForResult(intent, EDIT_PROFILE_REQUEST_CODE);
+            });
+        }
 
-        followerCountTextView.setOnClickListener(v -> {
-            if (currentUserId == null) return;
-            Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
-            intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
-            intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "followers");
-            startActivity(intent);
-        });
+        if (followerCountTextView != null) {
+            followerCountTextView.setOnClickListener(v -> {
+                if (currentUserId == null) return;
+                Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
+                intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
+                intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "followers");
+                startActivity(intent);
+            });
+        }
 
-        followingCountTextView.setOnClickListener(v -> {
-            if (currentUserId == null) return;
-            Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
-            intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
-            intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "following");
-            startActivity(intent);
-        });
+        if (followingCountTextView != null) {
+            followingCountTextView.setOnClickListener(v -> {
+                if (currentUserId == null) return;
+                Intent intent = new Intent(UserProfileActivity.this, FollowListActivity.class);
+                intent.putExtra(FollowListActivity.EXTRA_USER_ID, currentUserId);
+                intent.putExtra(FollowListActivity.EXTRA_LIST_TYPE, "following");
+                startActivity(intent);
+            });
+        }
     }
 
     private void loadProfileData() {
@@ -255,7 +263,7 @@ public class UserProfileActivity extends AppCompatActivity {
 
         if (requestCode == EDIT_PROFILE_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             String newNickname = data.getStringExtra("newNickname");
-            String newImageUriString = data.getStringExtra("newImageUri");
+            Uri imageUri = data.getData();
 
             JsonObject updateData = new JsonObject();
             boolean hasNicknameChanged = newNickname != null && !newNickname.equals(currentUsername);
@@ -271,9 +279,8 @@ public class UserProfileActivity extends AppCompatActivity {
                 updateData.add("user", userData);
             }
 
-            if (newImageUriString != null) {
+            if (imageUri != null) {
                 // A new image was selected, start upload flow
-                Uri imageUri = Uri.parse(newImageUriString);
                 // Pass the updateData object which may contain nickname changes
                 uploadProfileImageToFirebaseAndSaveProfile(imageUri, updateData);
             } else if (hasNicknameChanged) {
@@ -298,24 +305,29 @@ public class UserProfileActivity extends AppCompatActivity {
         Toast.makeText(this, "프로필 이미지 업로드 중...", Toast.LENGTH_SHORT).show();
 
         String fileName = "profile_images/" + FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + UUID.randomUUID().toString();
-        storage.getReference().child(fileName).putFile(imageUri)
-                .addOnSuccessListener(taskSnapshot -> taskSnapshot.getStorage().getDownloadUrl()
-                        .addOnSuccessListener(uri -> {
-                            String downloadUrl = uri.toString();
-                            currentProfileImageUrl = downloadUrl; // Update local URL
-                            updateData.addProperty("profile_image_url", downloadUrl);
-                            updateProfileOnBackend(updateData); // Update backend with all changes
-                        })
-                        .addOnFailureListener(e -> {
-                            Toast.makeText(UserProfileActivity.this, "이미지 URL 가져오기 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                            // If nickname change was also pending, decide if you want to save it anyway
-                            // For now, we stop.
-                        }))
-                .addOnFailureListener(e -> {
-                    Toast.makeText(UserProfileActivity.this, "이미지 업로드 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                    // If nickname change was also pending, decide if you want to save it anyway
-                    // For now, we stop.
-                });
+        try {
+            storage.getReference().child(fileName).putFile(imageUri)
+                    .addOnSuccessListener(taskSnapshot -> taskSnapshot.getStorage().getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                String downloadUrl = uri.toString();
+                                currentProfileImageUrl = downloadUrl; // Update local URL
+                                updateData.addProperty("profile_image_url", downloadUrl);
+                                updateProfileOnBackend(updateData); // Update backend with all changes
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(UserProfileActivity.this, "이미지 URL 가져오기 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                                // If nickname change was also pending, decide if you want to save it anyway
+                                // For now, we stop.
+                            }))
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(UserProfileActivity.this, "이미지 업로드 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                        // If nickname change was also pending, decide if you want to save it anyway
+                        // For now, we stop.
+                    });
+        } catch (Exception e) {
+            Toast.makeText(this, "선택된 이미지가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Failed to upload image.", e);
+        }
     }
 
     private void updateProfileOnBackend(JsonObject updateData) {

@@ -32,7 +32,7 @@ interface ApiService {
     fun signup(@Body request: SignUpRequest): Call<Void>
 
     // Backend uses 'q' for general search, not 'tag'. Modified from .kt, matched to .java
-    @GET("videos/")
+    @GET("api/videos/")
     fun getVideos(@Query("q") searchQuery: String?, @Query("sort_by") sortBy: String?): Call<List<Video>>
 
     @POST("videos/")
@@ -72,7 +72,7 @@ interface ApiService {
     fun getFollowing(@Path("pk") userId: String): Call<List<SimpleUser>>
 
     // From .java (for UserProfileActivity)
-    @GET("profile/")
+    @GET("api/profile/")
     fun getMyProfile(): Call<JsonElement>
 
     // From .java (for UserProfileActivity update)
