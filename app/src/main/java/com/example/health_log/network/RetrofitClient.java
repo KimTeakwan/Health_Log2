@@ -11,7 +11,7 @@ public class RetrofitClient {
     // On Windows, run 'ipconfig' in Command Prompt.
     // On macOS/Linux, run 'ifconfig' or 'ip addr' in the terminal.
     // The backend server must be running on your computer and accessible on the same network.
-    private static final String BASE_URL = "http://10.0.2.2:8000/";
+    private static final String BASE_URL = "http://192.168.0.13:8000/";
 
     public static ApiService getApiService() {
         if (retrofit == null) {

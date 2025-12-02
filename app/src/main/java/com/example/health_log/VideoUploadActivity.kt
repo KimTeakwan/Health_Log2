@@ -132,7 +132,7 @@ class VideoUploadActivity : AppCompatActivity() {
             title = title,
             description = description,
             videoFileUrl = videoUrl,
-            tags = tags,
+            tag_names = tags,
             requestsFeedback = requestsFeedback,
             visibility = visibility
         )

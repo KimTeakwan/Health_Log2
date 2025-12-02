@@ -28,47 +28,47 @@ import com.example.health_log.ReportRequestBody
 // Reconciled ApiService interface
 interface ApiService {
 
-    @POST("signup/")
+    @POST("api/signup/")
     fun signup(@Body request: SignUpRequest): Call<Void>
 
     // Backend uses 'q' for general search, not 'tag'. Modified from .kt, matched to .java
     @GET("api/videos/")
     fun getVideos(@Query("q") searchQuery: String?, @Query("sort_by") sortBy: String?): Call<List<Video>>
 
-    @POST("videos/")
+    @POST("api/videos/")
     fun createVideoRecord(@Body request: VideoCreateRequest): Call<Video>
 
-    @GET("videos/{id}/")
+    @GET("api/videos/{id}/")
     fun getVideo(@Path("id") videoId: Int): Call<Video>
 
-    @POST("videos/{pk}/likes/")
+    @POST("api/videos/{pk}/likes/")
     fun likeVideo(@Path("pk") videoId: Int): Call<Void>
     
-    @DELETE("videos/{pk}/likes/")
+    @DELETE("api/videos/{pk}/likes/")
     fun unlikeVideo(@Path("pk") videoId: Int): Call<Void>
 
-    @POST("videos/{pk}/comments/") // Use pk consistently. Matched to .java
+    @POST("api/videos/{pk}/comments/") // Use pk consistently. Matched to .java
     fun postComment(@Path("pk") videoId: Int, @Body comment: Comment): Call<Comment>
 
     // Backend uses POST for adoptComment. Modified from .kt, matched to .java
-    @POST("comments/{pk}/adopt/")
+    @POST("api/comments/{pk}/adopt/")
     fun adoptComment(@Path("pk") commentId: Int): Call<Void>
 
-    @POST("reports/")
+    @POST("api/reports/")
     fun reportContent(@Body body: com.example.health_log.ReportBody): Call<Void>
 
     // From .java (for PublicProfileActivity)
-    @GET("users/{pk}/")
+    @GET("api/users/{pk}/")
     fun getUserProfile(@Path("pk") userId: Int): Call<PublicProfileActivity.PublicProfileResponse>
 
     // From .java (for Follow/Unfollow)
-    @POST("users/{pk}/follow/")
+    @POST("api/users/{pk}/follow/")
     fun followToggle(@Path("pk") userId: Int): Call<Void>
 
-    @GET("users/{pk}/followers/")
+    @GET("api/users/{pk}/followers/")
     fun getFollowers(@Path("pk") userId: String): Call<List<SimpleUser>>
 
-    @GET("users/{pk}/following/")
+    @GET("api/users/{pk}/following/")
     fun getFollowing(@Path("pk") userId: String): Call<List<SimpleUser>>
 
     // From .java (for UserProfileActivity)
@@ -76,16 +76,16 @@ interface ApiService {
     fun getMyProfile(): Call<JsonElement>
 
     // From .java (for UserProfileActivity update)
-    @PATCH("profile/")
+    @PATCH("api/profile/")
     fun updateProfile(@Body data: JsonObject): Call<JsonElement>
 
     // Original .kt method. Specific to TrainerProfile.
-    @GET("users/profile/")
+    @GET("api/users/profile/")
     fun getTrainerProfile(): Call<TrainerProfile>
 
     // Original .kt Multipart methods. Unclear what they are for, but keeping them.
     @Multipart
-    @PUT("users/profile_image/")
+    @PUT("api/users/profile_image/")
     fun uploadProfileImage(
         @Part("description") description: RequestBody,
         @Part file: MultipartBody.Part
